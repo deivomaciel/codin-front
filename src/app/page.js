@@ -1,58 +1,48 @@
 'use client'
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react'
+import { Suspense } from 'react'
 import { FaQrcode } from "react-icons/fa6"
 import Logo from './assets/logo.png'
+import QRCode from './components/qrcode';
+import Loading from './components/loading/Loading';
 
 export default function Home() {
   const [inputValue, setInputValue] = useState('')
-  const qrCodeRef = useRef(null)
+  const [redyToCall, setRedyToCall] = useState(false)
+  const [codeInView, setCodeInView] = useState(false)
   const inputRef = useRef(null)
-
-  const getCode = async link => {
-    const url = 'https://codin-api-code.cyclic.app/getqrcode'
-    const options = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 'link': link })
-    }
-
-    const response = await fetch(url, options)
-    if(!response.ok) throw new Error(`Erro na requisição: ${response.status} - ${response.statusText}`)
-    const result = await response.json()
-    return result
-  }
 
   const handleButton = async event => {
     event.preventDefault()
-
     if(inputValue.trim().length == 0) return
-
-    const codeResult = await getCode(inputValue)
-    if(codeResult) {
-      qrCodeRef.current.innerHTML = `<img src="data:image/png;base64, ${codeResult.qr_code_base64}" alt="QR code"/>`
-      qrCodeRef.current.style.display = "flex"
-    }
-
+    setCodeInView(true)
+    setRedyToCall(true)
     inputRef.current.value = ""
-    inputRef.current.focus()
   }
 
   useEffect(() => {
     inputRef.current.focus()
   }, [])
 
+  useEffect(() => {
+    setRedyToCall(false)
+  }, [inputValue])
+
   return (
-    <>
-      <main className="h-screen flex flex-col justify-center items-center gap-8 p-6 lg:p-32">
+    <div className='relative br-blue-200'>
+      <main className="flex flex-col items-center gap-8 p-6 lg:p-32">
         <section className="flex flex-col justify-center items-center text-center gap-4">
           <h1 className="text-4xl sm:text-4xl lg:text-5xl xl:text-6xl text-main-text font-bold">Instant <span className="text-blue-500">QR codes</span> Generation.</h1>
           <p className="lg:text-2xl text-slate-700">The ultimate QR code generator to connect <br className='hidden sm:block'/> your physical and digital worlds seamlessly.</p>
         </section>
 
-        <section className='hidden' ref={qrCodeRef}>
-          efdwefew
-        </section>
+        {
+          (codeInView && redyToCall) && 
+          <Suspense fallback={<Loading />}>
+            <QRCode qrContent={inputValue} />
+          </Suspense>
+        }
 
         <form className="p-4 lg:w-606">
           <div className="drop-shadow-lg rounded-xl p-2 border-2 border-blue-500 flex justify-between bg-white">
@@ -75,7 +65,7 @@ export default function Home() {
         </form>
       </main>
 
-      <footer className='p-8 flex flex-col sm:flex-row items-center justify-between text-sm text-gray-500 border-t'>
+      <footer className='p-8 flex flex-col sm:flex-row items-center justify-between text-sm text-gray-500 border-t mt-32'>
         <div className='flex items-center justify-center gap-4'>
           <Image src={Logo} alt='Codin logo' width={80}/>
           <p>&copy; 2024 Codin Software.</p>
@@ -87,6 +77,6 @@ export default function Home() {
           <a href="#">Terms</a>
         </div>
       </footer>
-    </>
+    </div>
   );
 }
