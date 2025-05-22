@@ -2,7 +2,7 @@ import { HiDownload } from "react-icons/hi";
 
 export default async function QRCode(props) {
     const getCode = async link => {
-        const url = 'https://codin-api-code.cyclic.app/getqrcode'
+        const url = 'https://codin-back.onrender.com/getqrcode'
         const options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
